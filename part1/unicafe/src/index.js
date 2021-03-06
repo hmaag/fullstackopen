@@ -16,6 +16,14 @@ const Button = ({onClick, text}) => (
   </button>
 )
 
+const Statistic = ({stat, value}) => {
+  return (
+    <div>
+      <p>{stat} {value}</p>
+    </div>
+  )
+}
+
 const Statistics = ({counts}) => {
   const total = counts.reduce((sum, value) => sum + value, 0)
   if (total === 0) {
@@ -23,18 +31,34 @@ const Statistics = ({counts}) => {
       <div>No feedback given</div>
     )
   }
-  
+
   const average = total !== 0 ? (counts[0] - counts[2]) / total : 0
   const positive = total !== 0 ? (counts[0] / total) * 100 : 0
   console.log(total)
   return (
     <div>
-      <p>good {counts[0]}</p>
-      <p>neutral {counts[1]}</p>
-      <p>bad {counts[2]}</p>
-      <p>all {total}</p>
-      <p>average {average}</p>
-      <p>positive {positive}</p>
+      <table>
+        <tbody>
+          <tr>
+            <td><Statistic stat="good" value={counts[0]} /></td>
+          </tr>
+          <tr>
+            <td><Statistic stat="neutral" value={counts[1]} /></td>
+          </tr>
+          <tr>
+            <td><Statistic stat="bad" value={counts[2]} /></td>
+          </tr>
+          <tr>
+            <td><Statistic stat="all" value={total} /></td>
+          </tr>
+          <tr>
+            <td><Statistic stat="average" value={average} /></td>
+          </tr>
+          <tr>
+            <td><Statistic stat="positive" value={positive} /></td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   )
 }
