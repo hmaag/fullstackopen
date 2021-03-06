@@ -22,7 +22,7 @@ const App = (props) => {
   }
 
   const displayRandomAnecdote = () => {
-    const randInt = Math.floor(Math.random()*5)
+    const randInt = Math.floor(Math.random() * anecdotes.length)
     setSelected(randInt)
   }
 
