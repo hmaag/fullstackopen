@@ -18,6 +18,12 @@ const Button = ({onClick, text}) => (
 
 const Statistics = ({counts}) => {
   const total = counts.reduce((sum, value) => sum + value, 0)
+  if (total === 0) {
+    return (
+      <div>No feedback given</div>
+    )
+  }
+  
   const average = total !== 0 ? (counts[0] - counts[2]) / total : 0
   const positive = total !== 0 ? (counts[0] / total) * 100 : 0
   console.log(total)
