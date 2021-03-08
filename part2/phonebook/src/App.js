@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react'
-import axios from 'axios'
 import Phonebook from './components/Phonebook'
 import PersonForm from './components/PersonForm'
 import Filter from './components/Filter'
+import personService from './services/persons'
 
 const App = () => {
   const [ persons, setPersons ] = useState([]) 
@@ -11,29 +11,43 @@ const App = () => {
   const [ filter, setFilter ] = useState('')
 
   useEffect(() => {
-    axios
-      .get('http://localhost:3001/persons')
-      .then(response => {
-        setPersons(response.data)
+    personService
+      .getAll()
+      .then(allPersons => {
+        setPersons(allPersons)
       })
   }, [])
 
   const addPerson = (event) => {
     event.preventDefault()
-    if (persons.map(person => person.name).includes(newName)) {
-      window.alert(`${newName} is already added to the phonebook`)
-      setNewName('')
-      setNewNumber('')
-    } else {
-      const personObject = {
-        name: newName,
-        number: newNumber,
-        id: persons.length + 1
-      }
-      setPersons(persons.concat(personObject))
-      setNewName('')
-      setNewNumber('')
+    const personObject = {
+      name: newName,
+      number: newNumber
     }
+    if (persons.map(person => person.name).includes(newName)) {
+      const personToUpdate = persons.find(person => person.name === newName)
+      const id = personToUpdate.id
+      personService
+        .update(personToUpdate, personObject)
+        .then(returnedPerson => {
+          setPersons(persons.map(person => person.id !== id ? person : returnedPerson))
+        })
+    } else {
+      personService
+        .create(personObject)
+        .then(returnedPerson => {
+          setPersons(persons.concat(returnedPerson))
+          setNewName('')
+          setNewNumber('')
+        })
+    }
+  }
+
+  const removePerson = (event) => {
+    event.preventDefault()
+    const id = parseInt(event.target.value)
+    personService.remove(persons[id - 1]) //id is one more than person's idx in array
+    setPersons(persons.filter(n => n.id !== id))
   }
 
   const handleNameChange = (event) => {
@@ -51,12 +65,25 @@ const App = () => {
   return (
     <div>
       <h2>phonebook</h2>
-        <Filter filter={filter} handleFilter={handleFilter} />
+        <Filter 
+          filter={filter} 
+          handleFilter={handleFilter} 
+        />
       <br />
       <h2>add a new person</h2>
-        <PersonForm addPerson={addPerson} newName={newName} handleNameChange={handleNameChange} newNumber={newNumber} handleNumberChange={handleNumberChange}/>
+        <PersonForm 
+          addPerson={addPerson} 
+          newName={newName} 
+          handleNameChange={handleNameChange} 
+          newNumber={newNumber} 
+          handleNumberChange={handleNumberChange}
+        />
       <h2>numbers</h2>
-        <Phonebook persons={persons} filter={filter}/>
+        <Phonebook 
+          persons={persons} 
+          filter={filter}
+          removePerson={removePerson}
+        />
     </div>
     
   )
