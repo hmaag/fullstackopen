@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import Phonebook from './components/Phonebook'
 import PersonForm from './components/PersonForm'
 import Filter from './components/Filter'
+import Notification from './components/Notification'
 import personService from './services/persons'
 
 const App = () => {
@@ -9,6 +10,7 @@ const App = () => {
   const [ newName, setNewName ] = useState('')
   const [ newNumber, setNewNumber ] = useState('')
   const [ filter, setFilter ] = useState('')
+  const [ message, setMessage ] = useState(null)
 
   useEffect(() => {
     personService
@@ -31,6 +33,17 @@ const App = () => {
         .update(personToUpdate, personObject)
         .then(returnedPerson => {
           setPersons(persons.map(person => person.id !== id ? person : returnedPerson))
+          setMessage(`${personToUpdate.name}'s phone number has been updated`)
+          setTimeout(() => {
+            setMessage(null)
+          }, 3000)
+        })
+        .catch(error => {
+          setMessage(`${personToUpdate.name} has already been removed from the phonebook`)
+          setTimeout(() => {
+            setMessage(null)
+          }, 3000)
+          setPersons(persons.filter(n => n.id !== id))
         })
     } else {
       personService
@@ -40,14 +53,32 @@ const App = () => {
           setNewName('')
           setNewNumber('')
         })
+      setMessage(`${newName} has been added to the phonebook`)
+      setTimeout(() => {
+        setMessage(null)
+      }, 3000)
     }
   }
 
   const removePerson = (event) => {
     event.preventDefault()
     const id = parseInt(event.target.value)
-    personService.remove(persons[id - 1]) //id is one more than person's idx in array
-    setPersons(persons.filter(n => n.id !== id))
+    const personToRemove = persons.find(person => person.id === id)
+    personService
+      .remove(persons[id - 1]).then(() => {
+        setPersons(persons.filter(n => n.id !== id))
+        setMessage(`${personToRemove.name} has been removed from the phonebook`)
+        setTimeout(() => {
+          setMessage(null)
+        }, 3000)
+      }) //id is one more than person's idx in array
+      .catch(error => {
+        setMessage(`${personToRemove.name} has already been removed from the phonebook`)
+        setTimeout(() => {
+          setMessage(null)
+        }, 3000)
+        setPersons(persons.filter(n => n.id !== id))
+      })
   }
 
   const handleNameChange = (event) => {
@@ -65,6 +96,7 @@ const App = () => {
   return (
     <div>
       <h2>phonebook</h2>
+        <Notification message={message} />
         <Filter 
           filter={filter} 
           handleFilter={handleFilter} 
