@@ -29,7 +29,9 @@ const App = () => {
     if (persons.map(person => person.name).includes(newName)) {
       const personToUpdate = persons.find(person => person.name === newName)
       const id = personToUpdate.id
-      personService
+      if (window.confirm(`${personToUpdate.name} is already added to the phonebook. Replace the old number with a new one?`)) {
+        personObject['id'] = id // make sure we send the right id over
+        personService
         .update(personToUpdate, personObject)
         .then(returnedPerson => {
           setPersons(persons.map(person => person.id !== id ? person : returnedPerson))
@@ -45,6 +47,8 @@ const App = () => {
           }, 3000)
           setPersons(persons.filter(n => n.id !== id))
         })
+      }
+      return
     } else {
       personService
         .create(personObject)
@@ -64,8 +68,9 @@ const App = () => {
     event.preventDefault()
     const id = parseInt(event.target.value)
     const personToRemove = persons.find(person => person.id === id)
-    personService
-      .remove(persons[id - 1]).then(() => {
+    if (window.confirm(`Delete ${personToRemove.name}`)) {
+      personService
+      .remove(personToRemove).then(() => {
         setPersons(persons.filter(n => n.id !== id))
         setMessage(`${personToRemove.name} has been removed from the phonebook`)
         setTimeout(() => {
@@ -79,6 +84,7 @@ const App = () => {
         }, 3000)
         setPersons(persons.filter(n => n.id !== id))
       })
+    }
   }
 
   const handleNameChange = (event) => {
