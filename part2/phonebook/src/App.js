@@ -36,6 +36,8 @@ const App = () => {
         .then(returnedPerson => {
           setPersons(persons.map(person => person.id !== id ? person : returnedPerson))
           setMessage(`${personToUpdate.name}'s phone number has been updated`)
+          setNewName('')
+          setNewNumber('')
           setTimeout(() => {
             setMessage(null)
           }, 3000)
@@ -66,7 +68,7 @@ const App = () => {
 
   const removePerson = (event) => {
     event.preventDefault()
-    const id = parseInt(event.target.value)
+    const id = event.target.value
     const personToRemove = persons.find(person => person.id === id)
     if (window.confirm(`Delete ${personToRemove.name}`)) {
       personService
