@@ -58,11 +58,19 @@ const App = () => {
           setPersons(persons.concat(returnedPerson))
           setNewName('')
           setNewNumber('')
+          setMessage(`${newName} has been added to the phonebook`)
+          setTimeout(() => {
+          setMessage(null)
+          }, 3000)
         })
-      setMessage(`${newName} has been added to the phonebook`)
-      setTimeout(() => {
-        setMessage(null)
-      }, 3000)
+        .catch(error => {
+          setMessage(`${JSON.stringify(error.response.data)}`)
+          setTimeout(() => {
+            setNewName('')
+            setNewNumber('')
+            setMessage(null)
+          }, 5000)
+        })
     }
   }
 

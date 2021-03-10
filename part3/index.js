@@ -88,31 +88,26 @@ const generateId = () => {
   return Math.floor(Math.random() * Math.floor(1000));
 }
 
-app.post(BASE_URL, (request, response) => {
-  const body = request.body
+app.post('/api/persons', (req, res, next) => {
+  const body = req.body
 
-  if (!body.name) {
-      return response.status(400).json({ 
-          error: 'name missing' 
-      })
-  } else if (!body.number) {
-      return response.status(400).json({ 
-          error: 'number missing' 
-      })
-  } else if (persons.map(person => person.name).includes(body.name)) {
-      return response.status(400).json({ 
-          error: 'name must be unique' 
-      })
+  // Check for missing name or number
+  if (!body.name || !body.number)  {
+    return res.status(400).json({
+      error: 'name or number is missing'
+    })
   }
 
   const person = new Person({
     name: body.name,
-    number: body.number
+    number: body.number,
   })
 
-  person.save().then(savedPerson => {
-    response.json(savedPerson.toJSON())
-  })
+  person
+    .save()
+    .then(savedPerson => savedPerson.toJSON())
+    .then(savedAndFormattedNote => res.json(savedAndFormattedNote))
+    .catch(error => next(error))
 })
 
 app.put(BASE_URL + '/:id', (request, response) => {
@@ -138,14 +133,13 @@ app.use(unknownEndpoint)
 
 const errorHandler = (error, request, response, next) => {
   console.error(error.message)
-
-  if (error.name === 'CastError' && error.kind == 'ObjectId') {
+  if (error.name === 'CastError' && error.kind === 'ObjectId') {
     return response.status(400).send({ error: 'malformatted id' })
-  } 
-
+  } else if (error.name === 'ValidationError') {
+    return response.status(400).json({ error: error.message })
+  }
   next(error)
 }
-
 app.use(errorHandler)
 
 const PORT = process.env.PORT
