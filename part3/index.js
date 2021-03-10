@@ -1,9 +1,11 @@
+require('dotenv').config()
 const { request, response } = require('express')
 const express = require('express')
 const app = express()
 const morgan = require('morgan')
 const cors = require('cors')
 const BASE_URL ='/api/persons'
+const Person = require('./models/person')
 
 app.use(express.json())
 app.use(cors())
@@ -61,18 +63,15 @@ app.get('/info', (request, response) => {
 })
 
 app.get(BASE_URL, (request, response) => {
-  response.json(persons)
+  Person.find({}).then(persons => {
+    response.json(persons.map(person => person.toJSON()))
+  })
 })
 
 app.get(BASE_URL + '/:id', (request, response) => {
-  const id = Number(request.params.id)
-  const person = persons.find(person => person.id === id)
-
-  if (person) {
-      response.json(person)
-  } else {
-      response.status(404).end()
-  }
+  Person.findById(request.params.id).then(person => {
+    response.json(person.toJSON())
+  })
 })
 
 app.delete(BASE_URL + '/:id', (request, response) => {
@@ -103,15 +102,14 @@ app.post(BASE_URL, (request, response) => {
       })
   }
 
-  const person = {
-      name: body.name,
-      number: body.number,
-      id: generateId()
-  }
+  const person = new Person({
+    name: body.name,
+    number: body.number
+  })
 
-  persons = persons.concat(person)
-
-  response.json(person)
+  person.save().then(savedPerson => {
+    response.json(savedPerson.toJSON())
+  })
 })
 
 app.put(BASE_URL + '/:id', (request, response) => {
@@ -120,7 +118,7 @@ app.put(BASE_URL + '/:id', (request, response) => {
   response.json(body)
 })
 
-const PORT = process.env.PORT || 3001
+const PORT = process.env.PORT
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`)
 })
